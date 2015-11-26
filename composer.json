@@ -1,5 +1,5 @@
 {
-	"name": "consultnn/yii2-abstract-api-client",
+	"name": "consultnn/yii2-base-api-client",
 	"description": "Abstract classes for api client",
 	"keywords": ["ConsultNN", "API"],
 	"license": "MIT",
