@@ -1,0 +1,35 @@
+{
+	"name": "consultnn/yii2-abstract-api-client",
+	"description": "Abstract classes for api client",
+	"keywords": ["ConsultNN", "API"],
+	"license": "MIT",
+	"authors": [
+		{
+			"name": "ICC Ltd.",
+			"email": "tech@consultnn.ru",
+			"homepage": "http://consultnn.ru"
+		},
+		{
+			"name": "Maxim Mironyuk",
+			"email": "serieznyi@gmail.com",
+			"role": "Developer"
+		}
+	],
+	"require": {
+		"php": ">=5.4.0",
+		"ext-curl": "*"
+	},
+	"require-dev": {
+		"psr/log": "dev-master",
+		"phpunit/phpunit": "4.1.*",
+		"squizlabs/php_codesniffer": "1.*"
+	},
+    "autoload": {
+        "psr-4": {
+            "consultnn\\api\\": "."
+        }
+    },
+	"support": {
+		"email": "tech@consultnn.ru"
+	}
+}
