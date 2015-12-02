@@ -47,15 +47,6 @@ class ApiConnection extends Component
      */
     protected $lastError;
 
-    public function init()
-    {
-        parent::init();
-
-        if ($this->url === null) {
-            throw new Exception('Not set `url` property');
-        }
-    }
-
     /**
      * Returns last Exception if $raiseException is false
      * @return \Exception
