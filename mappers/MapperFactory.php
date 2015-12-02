@@ -13,8 +13,6 @@ class MapperFactory
      */
     private $maps = [];
 
-    public $mappersNamespace = __NAMESPACE__;
-
     /**
      * MapperFactory constructor.
      * @param array $classMap
@@ -35,7 +33,7 @@ class MapperFactory
      * @return $this
      * @throws \consultnn\baseapi\exceptions\Exception
      */
-    public function map($data, $className = __CLASS__)
+    public function map($data, $className)
     {
         $className = $this->getClassName($className, $data);
         $object = new $className($this);
@@ -54,14 +52,10 @@ class MapperFactory
      */
     public function getClassName($name, $data = null)
     {
-        if (is_callable($name)) {
+        if (class_exists($name)) {
+            return $name;
+        } elseif (is_callable($name)) {
             return $this->getClassName(call_user_func($name, $data));
-        } else {
-            $className = isset($this->maps[$name]) ? $this->maps[$name] : '\\' . $this->mappersNamespace . '\\' . $name;
-        }
-
-        if (class_exists($className)) {
-            return $className;
         }
 
         throw new Exception(
