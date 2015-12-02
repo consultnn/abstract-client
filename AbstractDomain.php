@@ -15,14 +15,14 @@ class AbstractDomain extends Component
     /**
      * @var MapperFactory
      */
-    public $factory;
+    public $mapper;
 
     public function init()
     {
         parent::init();
 
-        if ($this->factory === null) {
-            $this->factory = new MapperFactory();
+        if ($this->mapper === null) {
+            $this->mapper = new MapperFactory();
         }
 
         if ($this->client === null) {
@@ -40,7 +40,7 @@ class AbstractDomain extends Component
     {
         $response = $this->client->send($service, $params);
         if (isset($response)) {
-            return $this->factory->map($response, $mapper);
+            return $this->mapper->map($response, $mapper);
         }
 
         return false;
@@ -84,7 +84,7 @@ class AbstractDomain extends Component
 
         $result = array();
         foreach ($response as $value) {
-            $result[] = $this->factory->map($value, $mapper);
+            $result[] = $this->mapper->map($value, $mapper);
         }
 
         return $result;
