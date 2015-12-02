@@ -1,5 +1,6 @@
 {
 	"name": "consultnn/yii2-base-api-client",
+	"minimum-stability": "dev",
 	"description": "Abstract classes for api client",
 	"keywords": ["ConsultNN", "API"],
 	"license": "MIT",
