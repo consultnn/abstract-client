@@ -17,14 +17,12 @@ class AbstractDomain extends Component
      */
     public $mapper;
 
-    public $mapperClass;
-
     public function init()
     {
         parent::init();
 
         if ($this->mapper === null) {
-            $this->mapper = new $this->mapperClass;
+            $this->mapper = new MapperFactory();
         }
 
         if ($this->client === null) {
