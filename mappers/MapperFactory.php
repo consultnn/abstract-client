@@ -4,7 +4,7 @@ namespace consultnn\baseapi\mappers ;
 
 use consultnn\baseapi\exceptions\Exception;
 
-class MapperFactory
+abstract class MapperFactory
 {
     /**
      * Custom class mappings
