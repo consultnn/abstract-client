@@ -21,7 +21,7 @@ class AbstractDomain extends Component
     {
         parent::init();
 
-        if ($this->client === null) {
+        if ($this->factory === null) {
             $this->factory = new MapperFactory();
         }
 
