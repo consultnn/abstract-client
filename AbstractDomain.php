@@ -4,19 +4,30 @@ namespace consultnn\baseapi;
 
 use consultnn\baseapi\exceptions\Exception;
 use consultnn\baseapi\mappers\MapperFactory;
+use yii\base\Component;
 
-class AbstractDomain
+class AbstractDomain extends Component
 {
-    public $client;
-
     /**
-     * @param ApiConnection $client
-     * @param MapperFactory $mapper
+     * @var ApiConnection
      */
-    public function __construct(ApiConnection $client = null, MapperFactory $mapper = null)
+    public $client;
+    /**
+     * @var MapperFactory
+     */
+    public $factory;
+
+    public function init()
     {
-        $this->client = $client ? $client : new ApiConnection();
-        $this->factory = $mapper ? $mapper : new MapperFactory();
+        parent::init();
+
+        if ($this->client === null) {
+            $this->factory = new MapperFactory();
+        }
+
+        if ($this->client === null) {
+            throw new Exception('ApiConnection is null');
+        }
     }
 
     /**
@@ -25,12 +36,13 @@ class AbstractDomain
      * @param string $mapper
      * @return mixed|mappers\MapperInterface
      */
-    protected function getSingle($service, $mapper, array $params = array())
+    protected function getSingle($service, $mapper, array $params = [])
     {
         $response = $this->client->send($service, $params);
         if (isset($response)) {
             return $this->factory->map($response, $mapper);
         }
+
         return false;
     }
 
@@ -43,13 +55,14 @@ class AbstractDomain
      * @return mappers\MapperInterface[]
      * @throws Exception
      */
-    protected function getInternalList($service, $mapper, array $params = array(), $typeItems = null)
+    protected function getInternalList($service, $mapper, array $params = [], $typeItems = null)
     {
         $response = $this->client->send($service, $params);
 
         if (is_string($response)) {
             throw new Exception("Can't get items for string response");
         }
+
         return $this->getItemsOfResponse($response, $mapper, $typeItems);
     }
 
@@ -73,6 +86,7 @@ class AbstractDomain
         foreach ($response as $value) {
             $result[] = $this->factory->map($value, $mapper);
         }
+
         return $result;
     }
 

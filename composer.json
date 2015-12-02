@@ -18,7 +18,8 @@
 	],
 	"require": {
 		"php": ">=5.4.0",
-		"ext-curl": "*"
+		"ext-curl": "*",
+		"yiisoft/yii2": "^2.0@dev"
 	},
 	"require-dev": {
 		"psr/log": "dev-master",

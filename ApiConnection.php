@@ -4,12 +4,13 @@ namespace consultnn\baseapi;
 
 use consultnn\baseapi\exceptions\ConnectionException;
 use consultnn\baseapi\exceptions\Exception;
+use yii\base\Component;
 
 /**
  * Class ApiConnection
  * @package DGApiClient
  */
-class ApiConnection
+class ApiConnection extends Component
 {
     /* @var \Psr\Log\LoggerInterface */
     private $logger;
@@ -46,16 +47,13 @@ class ApiConnection
      */
     protected $lastError;
 
-    /**
-     * @param \Psr\Log\LoggerInterface $logger
-     */
-    public function __construct($logger = null)
+    public function init()
     {
+        parent::init();
+
         if ($this->url === null) {
             throw new Exception('Not set `url` property');
         }
-
-        $this->logger = $logger;
     }
 
     /**
@@ -75,7 +73,7 @@ class ApiConnection
     public function setFormat($value)
     {
         $value = strtolower($value);
-        if (in_array($value, array('json', 'jsonp', 'xml'))) {
+        if (in_array($value, ['json', 'jsonp', 'xml'])) {
             return $this->format = $value;
         } else {
             throw new ConnectionException("Unknown format $value");
@@ -96,7 +94,7 @@ class ApiConnection
      * @return array|string
      * @throws ConnectionException
      */
-    public function send($service, array $params = array())
+    public function send($service, array $params = [])
     {
         $curl = $this->getCurl();
         curl_setopt(
@@ -109,6 +107,7 @@ class ApiConnection
         if (curl_errno($curl)) {
             return $this->raiseException(curl_error($curl), curl_errno($curl), null, 'CURL');
         }
+
         if ($this->getFormat() === 'xml') {
             return $data;
         }
@@ -123,6 +122,7 @@ class ApiConnection
         }
 
         $this->lastError = null;
+
         return $response['result'];
     }
 
@@ -131,14 +131,16 @@ class ApiConnection
      * @param array $params
      * @return string
      */
-    public function getRequest($service, array $params = array())
+    public function getRequest($service, array $params = [])
     {
         $params = array_filter($params);
         $params[$this->formatParam] = $this->format;
         $url = $this->url . '/' . $this->version . '/' . $service . '?' . http_build_query($params);
+
         if ($this->logger) {
             $this->logger->info($url);
         }
+
         return $url;
     }
 
@@ -155,6 +157,7 @@ class ApiConnection
             case 'json':
                 return @json_decode($data, true);
         }
+
         return $data;
     }
 
@@ -165,14 +168,15 @@ class ApiConnection
     {
         if ($this->curl === null) {
             $this->curl = curl_init();
-            curl_setopt_array($this->curl, array(
+            curl_setopt_array($this->curl, [
                 CURLOPT_TIMEOUT_MS => $this->timeout,
                 CURLOPT_RETURNTRANSFER => true,
                 CURLOPT_FOLLOWLOCATION => false,
                 CURLOPT_USERAGENT => 'PHP ' . __CLASS__,
                 CURLOPT_ENCODING => 'gzip, deflate'
-            ));
+            ]);
         }
+
         return $this->curl;
     }
 
@@ -195,13 +199,15 @@ class ApiConnection
     {
         $exception = new ConnectionException($message, $code, $previous, $type);
         if ($this->logger) {
-            $this->logger->error("[$code]: $type $message", array('exception' => $exception));
+            $this->logger->error("[$code]: $type $message", ['exception' => $exception]);
         }
+
         if ($this->raiseException) {
             throw $exception;
         } else {
             $this->lastError = $exception;
         }
+
         return false;
     }
 }
