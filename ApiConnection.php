@@ -8,6 +8,7 @@ use yii\base\Component;
 
 /**
  * Class ApiConnection
+ * @property array meta
  * @package DGApiClient
  */
 class ApiConnection extends Component
@@ -112,9 +113,15 @@ class ApiConnection extends Component
             return $this->raiseException("Invalid response message");
         }
 
+        $result = &$response['result'];
+
+        unset($response['result']);
+
+        $this->meta = $response;
+
         $this->lastError = null;
 
-        return $response['result'];
+        return $result;
     }
 
     /**
@@ -200,5 +207,15 @@ class ApiConnection extends Component
         }
 
         return false;
+    }
+
+    /**
+     * Success request meta data
+     *
+     * @return array
+     */
+    public function getMeta()
+    {
+        return $this->meta;
     }
 }

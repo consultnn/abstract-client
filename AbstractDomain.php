@@ -98,4 +98,12 @@ class AbstractDomain extends Component
     {
         return empty($values) ? null : implode(',', $values);
     }
+
+    /**
+     * @see ApiConnection::getMeta()
+     */
+    public function getMeta()
+    {
+        return $this->client->getMeta();
+    }
 }
