@@ -3,15 +3,13 @@
 namespace consultnn\baseapi;
 
 use consultnn\baseapi\exceptions\ConnectionException;
-use consultnn\baseapi\exceptions\Exception;
 use yii\base\Component;
 
 /**
  * Class ApiConnection
- * @property array meta
  * @package DGApiClient
  */
-class ApiConnection extends Component
+class ApiConnection
 {
     /* @var \Psr\Log\LoggerInterface */
     private $logger;
@@ -31,8 +29,6 @@ class ApiConnection extends Component
     /* @var int $timeout in milliseconds */
     public $timeout = 5000;
 
-    public $formatParam = '_format';
-
     /* @var resource $curl */
     protected $curl;
 
@@ -47,6 +43,14 @@ class ApiConnection extends Component
      * @var \Exception
      */
     protected $lastError;
+
+    /**
+     * @param \Psr\Log\LoggerInterface $logger
+     */
+    public function __construct($logger = null)
+    {
+        $this->logger = $logger;
+    }
 
     /**
      * Returns last Exception if $raiseException is false
@@ -100,28 +104,21 @@ class ApiConnection extends Component
             return $this->raiseException(curl_error($curl), curl_errno($curl), null, 'CURL');
         }
 
+        $response = $this->decodeResponse($data);
         if ($this->getFormat() === 'xml') {
             return $data;
         }
 
-        $response = $this->decodeResponse($data);
-        if (curl_getinfo($curl, CURLINFO_HTTP_CODE) != 200) {
-            return $this->raiseException($response['message'], $response['status']);
-        }
-
-        if (!$response || !isset($response['result'])) {
+        if (!$response || isset($response['code'])) {
             return $this->raiseException("Invalid response message");
         }
 
-        $result = &$response['result'];
-
-        unset($response['result']);
-
-        $this->meta = $response;
+        if (empty($response['total']))
+            return [];
 
         $this->lastError = null;
 
-        return $result;
+        return $response['result'];
     }
 
     /**
@@ -129,16 +126,13 @@ class ApiConnection extends Component
      * @param array $params
      * @return string
      */
-    public function getRequest($service, array $params = [])
+    public function getRequest($service, array $params = array())
     {
         $params = array_filter($params);
-        $params[$this->formatParam] = $this->format;
         $url = $this->url . '/' . $this->version . '/' . $service . '?' . http_build_query($params);
-
         if ($this->logger) {
             $this->logger->info($url);
         }
-
         return $url;
     }
 
@@ -155,7 +149,6 @@ class ApiConnection extends Component
             case 'json':
                 return @json_decode($data, true);
         }
-
         return $data;
     }
 
@@ -166,15 +159,14 @@ class ApiConnection extends Component
     {
         if ($this->curl === null) {
             $this->curl = curl_init();
-            curl_setopt_array($this->curl, [
+            curl_setopt_array($this->curl, array(
                 CURLOPT_TIMEOUT_MS => $this->timeout,
                 CURLOPT_RETURNTRANSFER => true,
                 CURLOPT_FOLLOWLOCATION => false,
                 CURLOPT_USERAGENT => 'PHP ' . __CLASS__,
-                CURLOPT_ENCODING => 'gzip, deflate'
-            ]);
+                CURLOPT_ENCODING => 'gzip, deflate',
+            ));
         }
-
         return $this->curl;
     }
 
@@ -197,25 +189,29 @@ class ApiConnection extends Component
     {
         $exception = new ConnectionException($message, $code, $previous, $type);
         if ($this->logger) {
-            $this->logger->error("[$code]: $type $message", ['exception' => $exception]);
+            $this->logger->error("[$code]: $type $message", array('exception' => $exception));
         }
-
         if ($this->raiseException) {
             throw $exception;
         } else {
             $this->lastError = $exception;
         }
-
         return false;
     }
 
     /**
-     * Success request meta data
-     *
-     * @return array
+     * @param array $meta
+     * @param string $defaultMessage
+     * @return bool
+     * @throws ConnectionException
      */
-    public function getMeta()
+    protected function metaException(array $meta, $defaultMessage = "")
     {
-        return $this->meta;
+        return $this->raiseException(
+            isset($meta['error']['message']) ? $meta['error']['message'] : $defaultMessage,
+            isset($meta['code']) ? $meta['code'] : 0,
+            null,
+            isset($meta['error']['type']) ? $meta['error']['type'] : ""
+        );
     }
 }
