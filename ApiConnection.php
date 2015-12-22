@@ -113,9 +113,6 @@ class ApiConnection
             return $this->raiseException("Invalid response message");
         }
 
-        if (empty($response['total']))
-            return [];
-
         $this->lastError = null;
 
         return $response['result'];
