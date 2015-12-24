@@ -45,6 +45,13 @@ class ApiConnection
     protected $lastError;
 
     /**
+     * Meta data about request
+     *
+     * @var array
+     */
+    private $_meta;
+
+    /**
      * @param \Psr\Log\LoggerInterface $logger
      */
     public function __construct($logger = null)
@@ -115,7 +122,13 @@ class ApiConnection
 
         $this->lastError = null;
 
-        return $response['result'];
+        $result = &$response['result'];
+
+        unset($response['result']);
+
+        $this->_meta = $response;
+
+        return $result;
     }
 
     /**
@@ -210,5 +223,15 @@ class ApiConnection
             null,
             isset($meta['error']['type']) ? $meta['error']['type'] : ""
         );
+    }
+
+    /**
+     * Success request meta data
+     *
+     * @return array
+     */
+    public function getMeta()
+    {
+        return $this->_meta;
     }
 }
