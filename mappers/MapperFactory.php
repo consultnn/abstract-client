@@ -11,7 +11,9 @@ class MapperFactory
      * Ex.: 'Address' => '\MyCustomAddress',
      * @var array
      */
-    private $maps = [];
+    private $_maps = [];
+
+    public $namespace;
 
     /**
      * MapperFactory constructor.
@@ -24,7 +26,7 @@ class MapperFactory
 
     public function setClassMap(array $classMap = [])
     {
-        $this->maps = $classMap;
+        $this->_maps = $classMap;
     }
 
     /**
@@ -44,6 +46,11 @@ class MapperFactory
         return $object->populate($data);
     }
 
+    private function getNamespace()
+    {
+        return isset($this->namespace) ? $this->namespace : __NAMESPACE__;
+    }
+
     /**
      * @param $name string|callable $name
      * @param null $data
@@ -52,10 +59,14 @@ class MapperFactory
      */
     public function getClassName($name, $data = null)
     {
-        if (class_exists($name)) {
-            return $name;
-        } elseif (is_callable($name)) {
+        if (is_callable($name)) {
             return $this->getClassName(call_user_func($name, $data));
+        } else {
+            $className = isset($this->_maps[$name]) ? $this->_maps[$name] : '\\' . $this->getNamespace() . '\\' . $name;
+        }
+
+        if (class_exists($className)) {
+            return $className;
         }
 
         throw new Exception(

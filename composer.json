@@ -1,5 +1,5 @@
 {
-	"name": "consultnn/yii2-base-api-client",
+	"name": "api/abstract-client",
 	"minimum-stability": "dev",
 	"description": "Abstract classes for api client",
 	"keywords": ["ConsultNN", "API"],
@@ -18,13 +18,10 @@
 	],
 	"require": {
 		"php": ">=5.4.0",
-		"ext-curl": "*",
-		"yiisoft/yii2": "^2.0@dev"
+		"ext-curl": "*"
 	},
 	"require-dev": {
-		"psr/log": "dev-master",
-		"phpunit/phpunit": "4.1.*",
-		"squizlabs/php_codesniffer": "1.*"
+		"psr/log": "dev-master"
 	},
     "autoload": {
         "psr-4": {

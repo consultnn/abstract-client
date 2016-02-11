@@ -3,7 +3,6 @@
 namespace consultnn\baseapi;
 
 use consultnn\baseapi\exceptions\ConnectionException;
-use yii\base\Component;
 
 /**
  * Class ApiConnection
@@ -12,7 +11,7 @@ use yii\base\Component;
 class ApiConnection
 {
     /* @var \Psr\Log\LoggerInterface */
-    private $logger;
+    private $_logger;
 
     /* @var string $url url to API */
     public $url;
@@ -21,7 +20,9 @@ class ApiConnection
     public $version = 'v1';
 
     /* @var string $format */
-    protected $format = 'json';
+    public $format = 'json';
+
+    public $formatParam = '_format';
 
     /* @var string $locale */
     public $locale = 'ru_RU';
@@ -56,7 +57,7 @@ class ApiConnection
      */
     public function __construct($logger = null)
     {
-        $this->logger = $logger;
+        $this->_logger = $logger;
     }
 
     /**
@@ -136,12 +137,13 @@ class ApiConnection
      * @param array $params
      * @return string
      */
-    public function getRequest($service, array $params = array())
+    public function getRequest($service, array $params = [])
     {
         $params = array_filter($params);
+        $params[$this->formatParam] = $this->format;
         $url = $this->url . '/' . $this->version . '/' . $service . '?' . http_build_query($params);
-        if ($this->logger) {
-            $this->logger->info($url);
+        if ($this->_logger) {
+            $this->_logger->info($url);
         }
         return $url;
     }
@@ -169,13 +171,13 @@ class ApiConnection
     {
         if ($this->curl === null) {
             $this->curl = curl_init();
-            curl_setopt_array($this->curl, array(
+            curl_setopt_array($this->curl, [
                 CURLOPT_TIMEOUT_MS => $this->timeout,
                 CURLOPT_RETURNTRANSFER => true,
                 CURLOPT_FOLLOWLOCATION => false,
                 CURLOPT_USERAGENT => 'PHP ' . __CLASS__,
                 CURLOPT_ENCODING => 'gzip, deflate',
-            ));
+            ]);
         }
         return $this->curl;
     }
@@ -198,8 +200,8 @@ class ApiConnection
     protected function raiseException($message = "", $code = 0, \Exception $previous = null, $type = "")
     {
         $exception = new ConnectionException($message, $code, $previous, $type);
-        if ($this->logger) {
-            $this->logger->error("[$code]: $type $message", array('exception' => $exception));
+        if ($this->_logger) {
+            $this->_logger->error("[$code]: $type $message", array('exception' => $exception));
         }
         if ($this->raiseException) {
             throw $exception;

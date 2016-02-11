@@ -9,7 +9,7 @@ abstract class AbstractMapper implements MapperInterface, \Serializable
      */
     protected $factory;
 
-    protected static $factoryAwareProperties = array();
+    protected static $factoryAwareProperties = [];
 
     public function __construct(MapperFactory $mapperFactory = null)
     {

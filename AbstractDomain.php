@@ -4,30 +4,34 @@ namespace consultnn\baseapi;
 
 use consultnn\baseapi\exceptions\Exception;
 use consultnn\baseapi\mappers\MapperFactory;
-use yii\base\Component;
 
-class AbstractDomain extends Component
+abstract class AbstractDomain
 {
     /**
      * @var ApiConnection
      */
     public $client;
+
     /**
      * @var MapperFactory
      */
-    public $mapper;
+    public $mapperFactory;
 
-    public function init()
+    /**
+     * Initialization api and mapper factory
+     * @return mixed
+     */
+    abstract public function init();
+
+    /**
+     * @param ApiConnection $client
+     * @param MapperFactory $mapper
+     */
+    public function __construct(ApiConnection $client = null, MapperFactory $mapper = null)
     {
-        parent::init();
-
-        if ($this->mapper === null) {
-            $this->mapper = new MapperFactory();
-        }
-
-        if ($this->client === null) {
-            throw new Exception('ApiConnection is null');
-        }
+        $this->client = $client ? $client : new ApiConnection();
+        $this->mapperFactory = $mapper ? $mapper : new MapperFactory();
+        $this->init();
     }
 
     /**
@@ -40,7 +44,7 @@ class AbstractDomain extends Component
     {
         $response = $this->client->send($service, $params);
         if (isset($response)) {
-            return $this->mapper->map($response, $mapper);
+            return $this->mapperFactory->map($response, $mapper);
         }
 
         return false;
@@ -76,15 +80,15 @@ class AbstractDomain extends Component
     {
         if ($items) {
             if (empty($response[$items])) {
-                return array();
+                return [];
             } else {
                 $response = $response[$items];
             }
         }
 
-        $result = array();
+        $result = [];
         foreach ($response as $value) {
-            $result[] = $this->mapper->map($value, $mapper);
+            $result[] = $this->mapperFactory->map($value, $mapper);
         }
 
         return $result;
