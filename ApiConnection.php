@@ -118,7 +118,7 @@ class ApiConnection
         }
 
         if (!$response || isset($response['code'])) {
-            return $this->raiseException("Invalid response message");
+            return $this->raiseException("Invalid response message on ".$this->getRequest($service, $params));
         }
 
         $this->lastError = null;
