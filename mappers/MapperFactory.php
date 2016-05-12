@@ -13,8 +13,6 @@ class MapperFactory
      */
     private $_maps = [];
 
-    public $namespace;
-
     /**
      * MapperFactory constructor.
      * @param array $classMap
@@ -46,11 +44,6 @@ class MapperFactory
         return $object->populate($data);
     }
 
-    private function getNamespace()
-    {
-        return isset($this->namespace) ? $this->namespace : __NAMESPACE__;
-    }
-
     /**
      * @param $name string|callable $name
      * @param null $data
@@ -62,7 +55,7 @@ class MapperFactory
         if (is_callable($name)) {
             return $this->getClassName(call_user_func($name, $data));
         } else {
-            $className = isset($this->_maps[$name]) ? $this->_maps[$name] : '\\' . $this->getNamespace() . '\\' . $name;
+            $className = isset($this->_maps[$name]) ? $this->_maps[$name] : $name;
         }
 
         if (class_exists($className)) {
