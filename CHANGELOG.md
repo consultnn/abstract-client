@@ -2,17 +2,27 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## 0.10.1 - 2016-05-17
-### Fixed
- - Fix access level for `ApiConnection::getLogger()` and set him as `public`
-
-## 0.10.0 - 2016-05-17
+## [Unreleased]
 ### Added
  - Public method for logger property
  
 ### Changed
  - Move psr/log dependency from dev 
 
+### Deprecated
+NONE
+
+### Removed
+NONE
+
+### Fixed
+NONE
+
+### Security
+NONE
+
 ## 0.9.0 - 2016-05-11
-First stable version
+First version
+
+[Unreleased]: http://gitlab.icc/api/abstract-client/compare/0.9.0...HEAD
 
