@@ -142,8 +142,8 @@ class ApiConnection
         $params = array_filter($params);
         $params[$this->formatParam] = $this->format;
         $url = $this->url . '/' . $this->version . '/' . $service . '?' . http_build_query($params);
-        if ($this->_logger) {
-            $this->_logger->info($url);
+        if ($logger = $this->getLogger()) {
+            $logger->info($url);
         }
         return $url;
     }
@@ -200,8 +200,8 @@ class ApiConnection
     protected function raiseException($message = "", $code = 0, \Exception $previous = null, $type = "")
     {
         $exception = new ConnectionException($message, $code, $previous, $type);
-        if ($this->_logger) {
-            $this->_logger->error("[$code]: $type $message", array('exception' => $exception));
+        if ($logger = $this->getLogger()) {
+            $logger->error("[$code]: $type $message", array('exception' => $exception));
         }
         if ($this->raiseException) {
             throw $exception;
@@ -235,5 +235,13 @@ class ApiConnection
     public function getMeta()
     {
         return $this->_meta;
+    }
+
+    /**
+     * @return null|\Psr\Log\LoggerInterface
+     */
+    private function getLogger()
+    {
+        return $this->_logger;
     }
 }
