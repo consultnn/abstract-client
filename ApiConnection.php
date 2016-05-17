@@ -240,7 +240,7 @@ class ApiConnection
     /**
      * @return null|\Psr\Log\LoggerInterface
      */
-    private function getLogger()
+    public function getLogger()
     {
         return $this->_logger;
     }
