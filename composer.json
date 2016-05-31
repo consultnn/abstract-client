@@ -1,5 +1,5 @@
 {
-	"name": "api/abstract-client",
+	"name": "consultnn/abstract-client",
 	"minimum-stability": "dev",
 	"description": "Abstract classes for api client",
 	"keywords": ["ConsultNN", "API"],
