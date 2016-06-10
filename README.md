@@ -21,7 +21,7 @@ class AbstractDomain extends \consultnn\baseapi\AbstractDomain
     public function init()
     {
         $this->client->url = 'http://api.drivenn.sokrat';
-        $this->mapperFactory->namespace = __NAMESPACE__.'\mappers';
+        $this->mapperFactory->setClassMap(['Page' => Page::class]);
     }
 }
 ```
