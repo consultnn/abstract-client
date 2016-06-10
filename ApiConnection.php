@@ -144,7 +144,8 @@ class ApiConnection
     {
         $params = array_filter($params);
         $params[$this->formatParam] = $this->format;
-        $url = $this->url . '/' . $this->version . '/' . $service . '?' . http_build_query($params);
+        $version = ($this->version !== '') ? $this->version . '/' : '';
+        $url = $this->url . '/' . $version . $service . '?' . http_build_query($params);
         if ($logger = $this->getLogger()) {
             $logger->info($url);
         }
