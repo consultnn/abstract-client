@@ -4,7 +4,7 @@
 
 * AbstractDomain - класс предметной области, он него наследуются классы реализующие методы доступа к api, как правило соответствует одному контроллеру в api. Реализованы методы `getSingle`, `getInternalList`, `getMeta` - получение одного объекта, массива или мета информации
 * AbstractMapper - класс для маппинга данных, он него наследуются классы описывающие тот или иной тип данных
-* ApiConnection - враппер над curl
+* ApiConnection - обертка над curl
 
 
 ### Пример использования:
@@ -20,7 +20,7 @@ class AbstractDomain extends \consultnn\baseapi\AbstractDomain
 {
     public function init()
     {
-        $this->client->url = 'http://api.drivenn.sokrat';
+        $this->client->url = 'http://api.site.com';
         $this->mapperFactory->setClassMap(['Page' => Page::class]);
     }
 }
