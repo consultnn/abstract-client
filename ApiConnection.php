@@ -40,6 +40,11 @@ class ApiConnection
     public $raiseException = true;
 
     /**
+     * @var string
+     */
+    public $statusField = 'code';
+
+    /**
      * This variable contains exception class if $raiseException is false.
      * @var \Exception
      */
@@ -117,10 +122,10 @@ class ApiConnection
             return $data;
         }
 
-        if (!$response || isset($response['code'])) {
+        if (!$response || isset($response[$this->statusField])) {
             return $this->raiseException(
                 "Invalid response message on ".$this->getRequest($service, $params),
-                isset($response['code']) ? $response['code'] : null
+                isset($response[$this->statusField]) ? $response[$this->statusField] : null
             );
         }
 
