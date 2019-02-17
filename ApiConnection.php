@@ -114,7 +114,7 @@ class ApiConnection
         $data = curl_exec($curl);
 
         if (curl_errno($curl)) {
-            return $this->raiseException(curl_error($curl), curl_errno($curl), null, 'CURL');
+            return $this->raiseException(curl_error($curl) . 'on url: ' .$this->getRequest($service, $params), curl_errno($curl), null, 'CURL');
         }
 
         $response = $this->decodeResponse($data);
