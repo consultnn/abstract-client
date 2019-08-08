@@ -10,6 +10,26 @@ use consultnn\baseapi\exceptions\ConnectionException;
  */
 class ApiConnection
 {
+    /**
+     * Types of request.
+     * Set in curl option CURLOPT_CUSTOMREQUEST.
+     * Use one of defined ApiConnection::HTTP_REQUEST_* constants
+     */
+    const HTTP_REQUEST_POST = 'POST';
+    const HTTP_REQUEST_PATCH = 'PATCH';
+    const HTTP_REQUEST_PUT = 'PUT';
+    const HTTP_REQUEST_GET = 'GET';
+    const HTTP_REQUEST_HEAD = 'HEAD';
+    const HTTP_REQUEST_OPTIONS = 'OPTIONS';
+    const HTTP_REQUEST_DELETE = 'DELETE';
+
+    /**
+     * Formats of response
+     */
+    const FORMAT_JSON = 'json';
+    const FORMAT_JSONP = 'jsonp';
+    const FORMAT_XML = 'xml';
+
     /* @var \Psr\Log\LoggerInterface */
     private $_logger;
 
@@ -19,19 +39,21 @@ class ApiConnection
     /* @var string $version api version */
     public $version = 'v1';
 
-    /* @var string $format */
-    public $format = 'json';
-
     public $formatParam = '_format';
 
     /* @var string $locale */
     public $locale = 'ru_RU';
+
+    public $responseEnvelope = 'result';
 
     /* @var int $timeout in milliseconds */
     public $timeout = 5000;
 
     /* @var resource $curl */
     protected $curl;
+
+    /* @var string $format */
+    private $format = self::FORMAT_JSON;
 
     /**
      * Throw exception or store it into $lastError variable
@@ -51,11 +73,13 @@ class ApiConnection
     protected $lastError;
 
     /**
-     * Meta data about request
+     * Meta data from request
      *
      * @var array
      */
     private $_meta;
+
+    private $_httpRequestType;
 
     /**
      * @param \Psr\Log\LoggerInterface $logger
@@ -82,11 +106,20 @@ class ApiConnection
     public function setFormat($value)
     {
         $value = strtolower($value);
-        if (in_array($value, ['json', 'jsonp', 'xml'])) {
+        if (in_array($value, self::getFormats())) {
             return $this->format = $value;
         } else {
             throw new ConnectionException("Unknown format $value");
         }
+    }
+
+    private static function getFormats()
+    {
+        return [
+            self::FORMAT_JSON,
+            self::FORMAT_JSONP,
+            self::FORMAT_XML,
+        ];
     }
 
     /**
@@ -97,24 +130,38 @@ class ApiConnection
         return $this->format;
     }
 
+    private static function isSendInPost()
+    {
+        return [
+            self::HTTP_REQUEST_POST,
+            self::HTTP_REQUEST_PATCH,
+            self::HTTP_REQUEST_PUT,
+        ];
+    }
+
     /**
      * @param string $service
      * @param array $params
+     * @param string $httpRequestType Value for curl option CURLOPT_CUSTOMREQUEST. Use one of defined ApiConnection::HTTP_REQUEST_* constants
+     *
+     *
      * @return array|string
      * @throws ConnectionException
      */
-    public function send($service, array $params = [])
+    public function send($service, array $params = [], $httpRequestType = self::HTTP_REQUEST_GET)
     {
+        $this->_httpRequestType = $httpRequestType;
+
         $curl = $this->getCurl();
-        curl_setopt(
-            $this->curl,
-            CURLOPT_URL,
-            $this->getRequest($service, $params)
-        );
+
+        curl_setopt($curl, CURLOPT_CUSTOMREQUEST, $httpRequestType);
+
+        $url = $this->getRequest($service, $params);
+        curl_setopt($this->curl,CURLOPT_URL, $url);
         $data = curl_exec($curl);
 
         if (curl_errno($curl)) {
-            return $this->raiseException(curl_error($curl) . 'on url: ' .$this->getRequest($service, $params), curl_errno($curl), null, 'CURL');
+            return $this->raiseException(curl_error($curl) . ' on ' . $url, curl_errno($curl), null, 'CURL');
         }
 
         $response = $this->decodeResponse($data);
@@ -124,16 +171,19 @@ class ApiConnection
 
         if (!$response || isset($response[$this->statusField])) {
             return $this->raiseException(
-                "Invalid response message on ".$this->getRequest($service, $params),
+                "Invalid response message on " . $url,
                 isset($response[$this->statusField]) ? $response[$this->statusField] : null
             );
         }
 
         $this->lastError = null;
 
-        $result = &$response['result'];
-
-        unset($response['result']);
+        if ($this->responseEnvelope) {
+            $result = &$response[$this->responseEnvelope];
+            unset($response[$this->responseEnvelope]);
+        } else {
+            $result = $response;
+        }
 
         $this->_meta = $response;
 
@@ -149,8 +199,20 @@ class ApiConnection
     {
         $params = array_filter($params);
         $params[$this->formatParam] = $this->format;
-        $version = ($this->version !== '') ? $this->version . '/' : '';
-        $url = $this->url . '/' . $version . $service . '?' . http_build_query($params);
+        $url = $this->url;
+
+        if ($this->version) {
+            $url .= '/' . $this->version;
+        }
+
+        $url .= '/' . $service;
+
+        if (in_array($this->_httpRequestType, self::isSendInPost())) {
+            curl_setopt($this->getCurl(), CURLOPT_POSTFIELDS, $params);
+        } else {
+            $url .= '?' . http_build_query($params);
+        }
+
         if ($logger = $this->getLogger()) {
             $logger->info($url);
         }
@@ -165,9 +227,9 @@ class ApiConnection
     {
         switch ($this->format) {
             /** @noinspection PhpMissingBreakStatementInspection */
-            case 'jsonp':
+            case self::FORMAT_JSONP:
                 $data = preg_replace("/ ^[?\w(]+ | [)]+\s*$ /x", "", $data); //JSONP -> JSON
-            case 'json':
+            case self::FORMAT_JSON:
                 return @json_decode($data, true);
         }
         return $data;
@@ -186,7 +248,6 @@ class ApiConnection
                 CURLOPT_FOLLOWLOCATION => false,
                 CURLOPT_USERAGENT => 'PHP ' . __CLASS__,
                 CURLOPT_ENCODING => 'gzip, deflate',
-                CURLOPT_DNS_USE_GLOBAL_CACHE => true
             ]);
         }
         return $this->curl;

@@ -1,6 +1,6 @@
 <?php
 
-namespace consultnn\baseapi\Mappers;
+namespace consultnn\baseapi\mappers;
 
 interface MapperInterface
 {
