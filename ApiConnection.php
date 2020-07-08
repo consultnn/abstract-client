@@ -248,13 +248,13 @@ class ApiConnection
     {
         if ($this->curl === null) {
             $this->curl = curl_init();
-            curl_setopt_array($this->curl, array_merge([
+            curl_setopt_array($this->curl, [
                 CURLOPT_TIMEOUT_MS => $this->timeout,
                 CURLOPT_RETURNTRANSFER => true,
                 CURLOPT_FOLLOWLOCATION => false,
                 CURLOPT_USERAGENT => 'PHP ' . __CLASS__,
                 CURLOPT_ENCODING => 'gzip, deflate',
-            ], $this->curlOptions));
+            ] + $this->curlOptions);
         }
         return $this->curl;
     }
