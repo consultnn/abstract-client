@@ -49,6 +49,11 @@ class ApiConnection
     /* @var int $timeout in milliseconds */
     public $timeout = 5000;
 
+    /**
+     * @var
+     */
+    public $curlOptions = [];
+
     /* @var resource $curl */
     protected $curl;
 
@@ -207,10 +212,11 @@ class ApiConnection
 
         $url .= '/' . $service;
 
+        $query = http_build_query($params);
         if (in_array($this->_httpRequestType, self::isSendInPost())) {
-            curl_setopt($this->getCurl(), CURLOPT_POSTFIELDS, $params);
+            curl_setopt($this->getCurl(), CURLOPT_POSTFIELDS, $query);
         } else {
-            $url .= '?' . http_build_query($params);
+            $url .= '?' . $query;
         }
 
         if ($logger = $this->getLogger()) {
@@ -242,13 +248,13 @@ class ApiConnection
     {
         if ($this->curl === null) {
             $this->curl = curl_init();
-            curl_setopt_array($this->curl, [
+            curl_setopt_array($this->curl, array_merge([
                 CURLOPT_TIMEOUT_MS => $this->timeout,
                 CURLOPT_RETURNTRANSFER => true,
                 CURLOPT_FOLLOWLOCATION => false,
                 CURLOPT_USERAGENT => 'PHP ' . __CLASS__,
                 CURLOPT_ENCODING => 'gzip, deflate',
-            ]);
+            ], $this->curlOptions));
         }
         return $this->curl;
     }
